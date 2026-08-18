@@ -42,8 +42,8 @@
         .page::-webkit-scrollbar-track { background: transparent; }
         .page::-webkit-scrollbar-thumb { background: #654a26; border-radius: 4px; }
 
-        .back { transform: rotateY(180deg); border-right: 1px solid rgba(0,0,0,0.15); }
-        .front { border-left: 1px solid rgba(0,0,0,0.15); }
+        .back { transform: rotateY(180deg) translateZ(1px); border-right: 1px solid rgba(0,0,0,0.15); }
+        .front { transform: rotateY(0deg) translateZ(1px); border-left: 1px solid rgba(0,0,0,0.15); }
 
         .front::before, .back::before {
             content: ''; position: absolute; top: 0; width: 40px; height: 100%;
@@ -230,7 +230,7 @@
 
         <div class="controls">
             <button id="prevBtn">Pagina Precedente</button>
-            <button id="nextBtn">Gira Pagina</button>
+            <button id="nextBtn">Pagina Successiva</button>
         </div>
 
     </div>
