@@ -42,8 +42,25 @@
         .page::-webkit-scrollbar-track { background: transparent; }
         .page::-webkit-scrollbar-thumb { background: #654a26; border-radius: 4px; }
 
-        .back { transform: rotateY(180deg) translateZ(1px); border-right: 1px solid rgba(0,0,0,0.15); }
-        .front { transform: rotateY(0deg) translateZ(1px); border-left: 1px solid rgba(0,0,0,0.15); }
+       /* 1. Impostazioni base con translateZ e blocco del mouse sul retro */
+        .back { 
+            transform: rotateY(180deg) translateZ(1px); 
+            border-right: 1px solid rgba(0,0,0,0.15); 
+            pointer-events: none; 
+        }
+        .front { 
+            transform: rotateY(0deg) translateZ(1px); 
+            border-left: 1px solid rgba(0,0,0,0.15); 
+            pointer-events: auto;
+        }
+
+        /* 2. Inversione dinamica: quando la pagina viene girata (.flipped) */
+        .paper.flipped .back {
+           pointer-events: auto; /* Riattiva lo scroll sulla pagina di sinistra */
+        }
+        .paper.flipped .front {
+            pointer-events: none; /* Disattiva completamente il fantasma di destra */
+        }
 
         .front::before, .back::before {
             content: ''; position: absolute; top: 0; width: 40px; height: 100%;
