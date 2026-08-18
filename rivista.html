@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.M.L.S. - Journal of Magical Law and Society</title>
+    
+    <!-- Importiamo i font per dare lo stile "Gazzetta Magica" -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Crimson+Text:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+
+    <style>
+        /* Sfondo della scrivania e reset */
+        body {
+            background-color: #2b2522; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Crimson Text', serif;
+            color: #1a1511;
+        }
+
+        /* Il contenitore del libro */
+        #book-container {
+            position: relative;
+            width: 900px;
+            height: 650px;
+            perspective: 2500px; /* Crea la profondità 3D per sfogliare */
+        }
+
+        /* Singolo foglio (fronte/retro) */
+        .paper {
+            position: absolute;
+            width: 450px; /* Metà della larghezza totale */
+            height: 100%;
+            right: 0;
+            transform-style: preserve-3d;
+            transform-origin: left center;
+            transition: transform 1.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+        }
+
+        /* Classe aggiunta dal JS quando la pagina viene girata */
+        .paper.flipped {
+            transform: rotateY(-180deg);
+        }
+
+        /* La facciata della pagina (Pergamena) */
+        .page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden; /* Nasconde il retro quando non è girata */
+            background-color: #f0e6d2; /* Colore pergamena ingiallita */
+            box-shadow: inset 0 0 50px rgba(101, 74, 38, 0.35), 0 0 10px rgba(0,0,0,0.3);
+            padding: 50px 40px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* Impostiamo il retro per stare girato di default */
+        .back {
+            transform: rotateY(180deg);
+            border-right: 1px solid rgba(0,0,0,0.15);
+        }
+
+        .front {
+            border-left: 1px solid rgba(0,0,0,0.15);
+        }
+
+        /* Ombra al centro (la rilegatura) */
+        .front::before, .back::before {
+            content: '';
+            position: absolute;
+            top: 0; width: 40px; height: 100%;
+            background: linear-gradient(to right, rgba(0,0,0,0.2) 0%, transparent 100%);
+            pointer-events: none;
+        }
+        .front::before { left: 0; }
+        .back::before { right: 0; background: linear-gradient(to left, rgba(0,0,0,0.2) 0%, transparent 100%); }
+
+        /* --- STILI TIPOGRAFICI DELLA RIVISTA --- */
+        .title-large { font-family: 'Cinzel', serif; font-size: 55px; text-align: center; margin: 0 0 10px 0; }
+        .subtitle { font-family: 'Playfair Display', serif; font-size: 18px; text-align: center; font-style: italic; border-bottom: 2px solid #1a1511; padding-bottom: 25px; margin-bottom: 40px; }
+        .article-title { font-family: 'Playfair Display', serif; font-size: 32px; text-align: center; margin-bottom: 20px; line-height: 1.2; }
+        .issue { text-align: center; font-size: 18px; margin-top: 60px; font-weight: bold; font-family: 'Playfair Display', serif; }
+        .columns { column-count: 2; column-gap: 30px; font-size: 16px; line-height: 1.7; text-align: justify; }
+
+        /* --- EFFETTO MAGICO INCHIOSTRO --- */
+        /* Tutto ciò che ha la classe 'magic-block' sarà invisibile di default */
+        .magic-block {
+            opacity: 0;
+            filter: blur(6px);
+            color: transparent;
+        }
+
+        /* Classe aggiunta dal JS per far apparire l'inchiostro */
+        .reveal {
+            animation: inkAppear 1.2s forwards ease-out;
+        }
+
+        @keyframes inkAppear {
+            0% { opacity: 0; filter: blur(6px); transform: scale(0.98); color: transparent; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+            40% { filter: blur(2px); color: #1a1511; text-shadow: 0 0 5px rgba(0,0,0,0.3); }
+            100% { opacity: 1; filter: blur(0); transform: scale(1); color: #1a1511; text-shadow: none; }
+        }
+
+        /* --- CONTROLLI --- */
+        .controls {
+            position: absolute;
+            bottom: -80px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        button {
+            background: #f0e6d2; border: 1px solid #654a26; padding: 12px 25px;
+            font-family: 'Playfair Display', serif; font-size: 16px; cursor: pointer;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.4); border-radius: 4px;
+            transition: 0.3s;
+        }
+        button:hover { background: #dfd2b8; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+    <div id="book-container">
+        
+        <!-- FOGLIO 1: Copertina e Indice -->
+        <div class="paper" id="p1">
+            <div class="page front">
+                <h1 class="title-large magic-block">J.M.L.S.</h1>
+                <h2 class="subtitle magic-block">Journal of Magical Law and Society</h2>
+                <div style="height: 60px;"></div>
+                <h3 class="article-title magic-block">I Fondamenti della Magia Contrattuale</h3>
+                <p class="issue magic-block">Uscita n° 42</p>
+            </div>
+            
+            <div class="page back">
+                <h2 class="article-title magic-block">Indice</h2>
+                <ul style="font-size: 20px; line-height: 2.5; padding-left: 20px;">
+                    <li class="magic-block">Editoriale: Leggi e Bacchette</li>
+                    <li class="magic-block">L'Uso Improprio dei Manufatti Babbani</li>
+                    <li class="magic-block">Nuovi Decreti del Wizengamot</li>
+                    <li class="magic-block">Il Caso "Weasley"</li>
+                    <li class="magic-block">Bibliografia</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- FOGLIO 2: L'Articolo e Istruzioni per te -->
+        <div class="paper" id="p2">
+            <div class="page front">
+                <h2 class="article-title magic-block" style="font-size: 26px;">L'Uso Improprio dei Manufatti Babbani</h2>
+                <div class="columns">
+                    <p class="magic-block">È ormai noto agli addetti ai lavori che il fascino esercitato dagli oggetti di fattura babbana su alcuni membri della nostra comunità sta raggiungendo livelli allarmanti. Recenti sequestri effettuati dall'Ufficio per l'Uso Improprio dei Manufatti Babbani hanno portato alla luce teiere mordaci, chiavi rimpicciolenti e persino tostapane che sputano fiamme.</p>
+                    <p class="magic-block">La legge 73/B impone pene severe per chiunque incanti oggetti di uso babbano con l'intento di causare danni o confusione. Arthur Weasley, capo del dipartimento, ha sottolineato come la scappatoia legale sulla "non intenzione di utilizzo" sia ormai un trucco logoro e necessiti di una revisione immediata da parte del tribunale speciale del Wizengamot.</p>
+                </div>
+            </div>
+            
+            <div class="page back">
+                <h2 class="article-title magic-block">Come aggiungere pagine</h2>
+                <div class="magic-block" style="text-align: justify; font-size: 16px; line-height: 1.8;">
+                    <p>Per aggiungere una nuova pagina a questa rivista del GDR, dovrai semplicemente copiare nel codice un intero blocco HTML chiamato <strong>&lt;div class="paper"&gt;</strong>.</p>
+                    <p>Ogni "paper" rappresenta un <em>foglio fisico</em> della rivista. Al suo interno troverai sempre la <strong>front</strong> (la pagina che vedi a destra prima di sfogliarla) e la <strong>back</strong> (la pagina che finisce a sinistra dopo aver girato il foglio).</p>
+                    <p><strong>Il Segreto Magico:</strong> Assicurati di aggiungere sempre la classe <code>magic-block</code> ai tuoi nuovi paragrafi (tag <em>&lt;p&gt;</em>), titoli o elenchi. È questa classe che dice al codice: <em>"Fai apparire questo testo magicamente come inchiostro!"</em>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOGLIO 3: Pagina Vuota e Bibliografia Finale -->
+        <div class="paper" id="p3">
+            <div class="page front">
+                <h2 class="article-title magic-block">Continuazione...</h2>
+                <div class="columns magic-block">
+                    <p>Qui puoi continuare il tuo articolo. Ricorda che se inserisci delle immagini in movimento (ad esempio usando delle GIF animate), l'effetto magico stile Gazzetta del Profeta sarà ancora più spettacolare per i tuoi giocatori!</p>
+                </div>
+            </div>
+            
+            <div class="page back">
+                <h2 class="article-title magic-block">Bibliografia</h2>
+                <ul style="font-size: 18px; line-height: 2.2;">
+                    <li class="magic-block"><em>Codice delle Leggi Magiche Vol. II</em>, Edizioni Ministeriali, Londra, 1998.</li>
+                    <li class="magic-block">Arsenius Jigger, <em>Pozioni e Antidoti Legislativi</em>, Diagon Alley.</li>
+                    <li class="magic-block"><em>Archivi del Wizengamot</em>, Sezione Manufatti e Babbani.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Pulsanti per Sfogliare -->
+        <div class="controls">
+            <button id="prevBtn">Pagina Precedente</button>
+            <button id="nextBtn">Gira Pagina</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- LOGICA DEL LIBRO E DELL'INCHIOSTRO MAGICO ---
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const papers = document.querySelectorAll('.paper');
+        
+        let currentLocation = 1; // La posizione attuale (1 = copertina chiusa)
+        let numOfPapers = papers.length;
+        let maxLocation = numOfPapers + 1;
+
+        // Gestisce i livelli (z-index) affinché le pagine si sovrappongano correttamente
+        function setZIndex() {
+            papers.forEach((paper, index) => {
+                if (index + 1 < currentLocation) {
+                    // Pagine già girate (si trovano a sinistra, l'ultima girata deve stare sopra)
+                    paper.style.zIndex = index + 1;
+                } else {
+                    // Pagine non ancora girate (si trovano a destra, la prima deve stare sopra)
+                    paper.style.zIndex = numOfPapers - index;
+                }
+            });
+        }
+
+        // Funzione per animare l'inchiostro in modo graduale
+        function triggerMagicInk(pageElement) {
+            if(!pageElement) return;
+            const blocks = pageElement.querySelectorAll('.magic-block');
+            
+            // 1. "Cancella" l'inchiostro se c'era
+            blocks.forEach(block => {
+                block.classList.remove('reveal');
+                void block.offsetWidth; // Trucco per forzare il riavvio dell'animazione
+            });
+            
+            // 2. Fai apparire i testi sfalsandoli nel tempo (effetto macchina da scrivere/inchiostro che scorre)
+            blocks.forEach((block, index) => {
+                // Ogni blocco appare 0.25 secondi dopo il precedente
+                block.style.animationDelay = `${index * 0.25}s`; 
+                block.classList.add('reveal');
+            });
+        }
+
+        function goNext() {
+            if (currentLocation < maxLocation) {
+                const currentPaper = papers[currentLocation - 1];
+                currentPaper.classList.add('flipped');
+                
+                // Animiamo l'inchiostro sulla pagina di SINISTRA (che si svela girando)
+                triggerMagicInk(currentPaper.querySelector('.back'));
+                
+                // Animiamo l'inchiostro sulla pagina di DESTRA (la nuova pagina sotto)
+                if (currentLocation < numOfPapers) {
+                    triggerMagicInk(papers[currentLocation].querySelector('.front'));
+                }
+                
+                currentLocation++;
+                // Cambia lo z-index esattamente a metà dell'animazione (600ms su 1.2s totali)
+                setTimeout(setZIndex, 600); 
+            }
+        }
+
+        function goPrev() {
+            if (currentLocation > 1) {
+                currentLocation--;
+                const currentPaper = papers[currentLocation - 1];
+                currentPaper.classList.remove('flipped');
+                
+                // Animiamo l'inchiostro sulla pagina di DESTRA (il fronte che si richiude)
+                triggerMagicInk(currentPaper.querySelector('.front'));
+                
+                // Animiamo l'inchiostro sulla pagina di SINISTRA (la pagina che c'era prima)
+                if (currentLocation > 1) {
+                    triggerMagicInk(papers[currentLocation - 2].querySelector('.back'));
+                }
+                
+                setTimeout(setZIndex, 600);
+            }
+        }
+
+        nextBtn.addEventListener('click', goNext);
+        prevBtn.addEventListener('click', goPrev);
+
+        // All'avvio, sistemiamo i livelli e inneschiamo la magia sulla prima pagina!
+        setZIndex();
+        triggerMagicInk(papers[0].querySelector('.front'));
+    </script>
+</body>
+</html>
