@@ -5,134 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>J.M.L.S. - Journal of Magical Law and Society</title>
     
-    <!-- Importiamo i font per dare lo stile "Gazzetta Magica" -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Crimson+Text:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
 
     <style>
-        /* Sfondo della scrivania e reset */
         body {
             background-color: #2b2522; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: 'Crimson Text', serif;
-            color: #1a1511;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; margin: 0;
+            font-family: 'Crimson Text', serif; color: #1a1511;
         }
 
-        /* Il contenitore del libro */
         #book-container {
-            position: relative;
-            width: 1080px;
-            height: 830px;
-            perspective: 2500px; /* Crea la profondità 3D per sfogliare */
+            position: relative; width: 950px; height: 680px;
+            perspective: 2500px; 
         }
 
-        /* Singolo foglio (fronte/retro) */
         .paper {
-            position: absolute;
-            width: 450px; /* Metà della larghezza totale */
-            height: 100%;
-            right: 0;
-            transform-style: preserve-3d;
-            transform-origin: left center;
+            position: absolute; width: 50%; height: 100%; right: 0;
+            transform-style: preserve-3d; transform-origin: left center;
             transition: transform 1.2s cubic-bezier(0.645, 0.045, 0.355, 1);
         }
 
-        /* Classe aggiunta dal JS quando la pagina viene girata */
-        .paper.flipped {
-            transform: rotateY(-180deg);
-        }
+        .paper.flipped { transform: rotateY(-180deg); }
 
-        /* La facciata della pagina (Pergamena) */
         .page {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden; /* Nasconde il retro quando non è girata */
-            background-color: #f0e6d2; /* Colore pergamena ingiallita */
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden; 
+            background-color: #f0e6d2; 
             box-shadow: inset 0 0 50px rgba(101, 74, 38, 0.35), 0 0 10px rgba(0,0,0,0.3);
-            padding: 50px 40px;
-            box-sizing: border-box;
-            overflow-y: auto;;
+            padding: 50px 40px; box-sizing: border-box;
+            overflow-y: auto; /* Permette lo scroll se il testo è lungo */
         }
 
-        /* Personalizza la barra di scorrimento per le pagine */
-        .page::-webkit-scrollbar {
-            width: 8px;
-        }
-        .page::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .page::-webkit-scrollbar-thumb {
-            background: #654a26; /* Colore marrone scuro inchiostro */
-            border-radius: 4px;
-        }
+        /* Stile Scrollbar Magica */
+        .page::-webkit-scrollbar { width: 6px; }
+        .page::-webkit-scrollbar-track { background: transparent; }
+        .page::-webkit-scrollbar-thumb { background: #654a26; border-radius: 4px; }
 
-        /* Impostiamo il retro per stare girato di default */
-        .back {
-            transform: rotateY(180deg);
-            border-right: 1px solid rgba(0,0,0,0.15);
-        }
+        .back { transform: rotateY(180deg); border-right: 1px solid rgba(0,0,0,0.15); }
+        .front { border-left: 1px solid rgba(0,0,0,0.15); }
 
-        .front {
-            border-left: 1px solid rgba(0,0,0,0.15);
-        }
-
-        /* Ombra al centro (la rilegatura) */
         .front::before, .back::before {
-            content: '';
-            position: absolute;
-            top: 0; width: 40px; height: 100%;
+            content: ''; position: absolute; top: 0; width: 40px; height: 100%;
             background: linear-gradient(to right, rgba(0,0,0,0.2) 0%, transparent 100%);
             pointer-events: none;
         }
         .front::before { left: 0; }
         .back::before { right: 0; background: linear-gradient(to left, rgba(0,0,0,0.2) 0%, transparent 100%); }
 
-        /* --- STILI TIPOGRAFICI DELLA RIVISTA --- */
+        /* Tipografia */
         .title-large { font-family: 'Cinzel', serif; font-size: 55px; text-align: center; margin: 0 0 10px 0; }
         .subtitle { font-family: 'Playfair Display', serif; font-size: 18px; text-align: center; font-style: italic; border-bottom: 2px solid #1a1511; padding-bottom: 25px; margin-bottom: 40px; }
         .article-title { font-family: 'Playfair Display', serif; font-size: 28px; text-align: center; margin-bottom: 20px; line-height: 1.2; }
+        .section-title { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 15px; font-weight: bold; }
+        
         .issue { text-align: center; font-size: 18px; margin-top: 60px; font-weight: bold; font-family: 'Playfair Display', serif; }
-        .columns { column-count: 2; column-gap: 30px; font-size: 16px; line-height: 1.7; text-align: justify; }
+        
+        .columns { column-count: 2; column-gap: 30px; font-size: 15px; line-height: 1.6; text-align: justify; }
+        .columns p, .columns ul { break-inside: avoid; margin-top: 0; margin-bottom: 15px; }
 
-        /* --- EFFETTO MAGICO INCHIOSTRO --- */
-        /* Tutto ciò che ha la classe 'magic-block' sarà invisibile di default */
-        .magic-block {
-            opacity: 0;
-            filter: blur(6px);
-            color: transparent;
-        }
-
-        /* Classe aggiunta dal JS per far apparire l'inchiostro */
-        .reveal {
-            animation: inkAppear 1.2s forwards ease-out;
-        }
-
+        /* Magia Inchiostro */
+        .magic-block { opacity: 0; filter: blur(6px); color: transparent; }
+        .reveal { animation: inkAppear 1.2s forwards ease-out; }
         @keyframes inkAppear {
             0% { opacity: 0; filter: blur(6px); transform: scale(0.98); color: transparent; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
             40% { filter: blur(2px); color: #1a1511; text-shadow: 0 0 5px rgba(0,0,0,0.3); }
             100% { opacity: 1; filter: blur(0); transform: scale(1); color: #1a1511; text-shadow: none; }
         }
 
-        /* --- CONTROLLI --- */
-        .controls {
-            position: absolute;
-            bottom: -80px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        button {
-            background: #f0e6d2; border: 1px solid #654a26; padding: 12px 25px;
-            font-family: 'Playfair Display', serif; font-size: 16px; cursor: pointer;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.4); border-radius: 4px;
-            transition: 0.3s;
-        }
+        .controls { position: absolute; bottom: -70px; width: 100%; display: flex; justify-content: center; gap: 20px; }
+        button { background: #f0e6d2; border: 1px solid #654a26; padding: 12px 25px; font-family: 'Playfair Display', serif; font-size: 16px; cursor: pointer; box-shadow: 2px 2px 5px rgba(0,0,0,0.4); border-radius: 4px; transition: 0.3s; }
         button:hover { background: #dfd2b8; transform: translateY(-2px); }
     </style>
 </head>
@@ -145,151 +87,74 @@
             <div class="page front">
                 <h1 class="title-large magic-block">J.M.L.S.</h1>
                 <h2 class="subtitle magic-block">Journal of Magical Law and Society</h2>
-                <div style="height: 60px;"></div>
-                <h2 class="article-title magic-block">Analisi sull'ecosistema e sull'omeostasi eco-magica sui territori limitrofi di Hogwarts</h2>
-                <p class="issue magic-block">di Bill Wulfric Silente
-                <p class="issue magic-block">Uscita VI</p>
+                <div style="height: 40px;"></div>
+                <h3 class="article-title magic-block">Rottura dell'Omeostasi Eco-Magica</h3>
+                <p class="issue magic-block">Uscita n° 1</p>
             </div>
             
             <div class="page back">
                 <h2 class="article-title magic-block">Indice</h2>
-                <ul style="font-size: 20px; line-height: 2.5; padding-left: 20px;">
-                    <ol class="magic-block">Introduzione</ol>
-                    <ol class="magic-block">Ecosistema Magico delle aree limitrofe ad Hogwarts</ol>
-                    <ol class="magic-block">Diffusione del bracconaggio e alterazioni comportamentali nella fauna magica</ol>
-                    <ol class="magic-block">Rottura dell’omeostasi eco-magica: effetti sull’ecosistema e sulla comunità magica</ol>
-                    <ol class="magic-block">Conclusione</ol>
-                    <ol class="magic-block">Bibliografia</li>
+                <ul style="font-size: 18px; line-height: 2.2; padding-left: 20px;">
+                    <li class="magic-block">1. Introduzione</li>
+                    <li class="magic-block">2. Ecosistema Magico delle aree limitrofe ad Hogwarts</li>
+                    <li class="magic-block">3. Diffusione del bracconaggio e alterazioni comportamentali nella fauna magica</li>
+                    <li class="magic-block">4. Rottura dell’omeostasi eco-magica: effetti sull’ecosistema e sulla comunità magica</li>
+                    <li class="magic-block">5. Conclusione</li>
+                    <li class="magic-block">6. Bibliografia</li>
                 </ul>
             </div>
         </div>
 
-        <!-- FOGLIO 2: L'Articolo e Istruzioni per te -->
+        <!-- FOGLIO 2: Introduzione e Inizio Ecosistema -->
         <div class="paper" id="p2">
             <div class="page front">
-                <h2 class="article-title magic-block" style="font-size: 26px;">1- Introduzione</h2>
+                <h2 class="section-title magic-block">1 - INTRODUZIONE</h2>
                 <div class="columns">
-                    <p class="magic-block">Negli ultimi tempi numerosi magizoologi hanno evidenziato una crescente instabilità nel comportamento della fauna magica delle Highlands scozzesi. Facendo riferimento alle aree limitrofe del nostro istituto, la scuola di Magia e Stregoneria di Hogwarts si possono notare episodi di aggressività anomala, alterazioni migratorie e improvvisi fenomeni di territorialità estrema con frequenza crescente. Ciò ha suscitato una crescente preoccupazione all’interno del Dipartimento per la Regolazione e il controllo delle creature magiche.</p>
-                    <p class="magic-block">Sarebbe una conclusione troppo semplicistica dare la colpa agli studenti o alla comunità accademica di tali mutamenti, così come sarebbe darla all’espansione degli insediamenti magici. Sicuramente, anche questi, sono un fattore di alterazione degli habitat selvatici e spesso ciò comporta anche un filo rosso diretto con il fenomeno del bracconaggio.</p>
-                    <p class="magic-block">Questo fenomeno comporta diverse conseguenze osservabili come la scomparsa di specie a causa del commercio illegale di componenti magici (McFusty S.), comportamenti più aggressivi a causa di attività predatorie (Pokeby G.) e a causa dello stress arcano cumulativo (Blatchley M.).. Comportamenti analoghi li si trovano anche nei Centauri: seppur specie autoctona nel loro territorio, è di facile osservazione un pattern di maggiore aggressività (Thornewick A.)</p>
+                    <p class="magic-block">Negli ultimi tempi numerosi magizoologi hanno evidenziato una crescente instabilità nel comportamento della fauna magica delle Highlands scozzesi. Facendo riferimento alle aree limitrofe del nostro istituto, la scuola di Magia e Stregoneria di Hogwarts si possono notare episodi di aggressività anomala, alterazioni migratorie e improvvisi fenomeni di territorialità estrema con frequenza crescente.</p>
+                    <p class="magic-block">Sarebbe una conclusione troppo semplicistica dare la colpa agli studenti o alla comunità accademica di tali mutamenti, così come sarebbe darla all’espansione degli insediamenti magici. Questo fenomeno comporta diverse conseguenze osservabili come la scomparsa di specie a causa del commercio illegale di componenti magici (McFusty S.) e comportamenti più aggressivi a causa di attività predatorie (Pokeby G.).</p>
                     <p class="magic-block">Si vuole dimostrare, quindi, come la rottura dell’omeostasi eco-magica sia non solo una minaccia biologica, ma anche un crescente rischio sociale e politico per il mondo magico.</p>
                 </div>
             </div>
             
             <div class="page back">
-                <h2 class="article-title magic-block">2 - Ecosistema magico delle aree limitrofe ad Hogwarts</h2>
-                <h1 class="subtitle magic-block">2.1 - Caratteristiche ambientali e proprietà magiche del territorio</h1>
-                <div class="column">
-                    <p class="magic-block">Le aree limitrofe di Hogwarts presentano una combinazione tra montagne, aree boschive, bacini lacustri e una grande concentrazione di magia antica. Ciò ha favorito la proliferazione di alcune specie.</p>
-                    <p class="magic-block">All’interno della Foresta Proibita troviamo una popolazione di creature eterogenea: Ippogrifi, colonie di Acromantule, Thestral e Unicorni che saltuariamente visitano quelle zone. Ospita, inoltre, una vasta comunità centaurica. Quest’alta eterogeneità è dovuta alla presenza di correnti eco-magiche favorevoli, ovvero flussi di energia naturale che influenzano la crescita di flora e fauna magica.</p>
-                    <p class="magic-block">Le aree circostanti presentano un ruolo importante nell’equilibrio ecosistemico locale. La presenza di formazioni rocciose vulcaniche delle Highlands favoriscono la presenza di Salamandre del fuoco e altre creature legate alle variazioni termiche del sottosuolo che raramente entrano in contatto diretto con gli umani (Ridgebit H.).</p>
-                    <p class="magic-block">Importante è focalizzarsi sull’interdipendenza tra le specie presenti: alterazioni apparentemente limitate ad un habitat possono produrre cambiamenti comportamentali estesi soprattutto nelle specie che coesistono all’interno dell’ecosistema stesso, soprattutto in quelle che vivono in branco (Pokeby G.).</p>
+                <h2 class="section-title magic-block">2 – ECOSISTEMA MAGICO (AREE LIMITROFE)</h2>
+                <div class="columns">
+                    <p class="magic-block"><strong>2.1 – Caratteristiche ambientali e proprietà magiche</strong><br>
+                    Le aree limitrofe di Hogwarts presentano una combinazione tra montagne, aree boschive, bacini lacustri e una grande concentrazione di magia antica. Ciò ha favorito la proliferazione di alcune specie. All’interno della Foresta Proibita troviamo una popolazione di creature eterogenea: Ippogrifi, colonie di Acromantule, Thestral e Unicorni.</p>
                     <p class="magic-block">L’eterogeneità stessa in queste aree ha aumentato la concentrazione del fenomeno del bracconaggio in quanto fonte delle più disparate risorse magiche da commerciare illegalmente.</p>
+                    <p class="magic-block"><strong>2.2 – Principali specie magiche</strong><br>
+                    Tra le specie più territoriali figurano ippogrifi e acromantule, entrambi molto inclini a comportamenti difensivi in caso di minaccia. Un ruolo fondamentale è svolto dai centauri stanziati nelle regioni più profonde. Pur non classificabile come fauna selvatica, percepiscono e difendono il loro territorio da gruppi di maghi armati e cacciatori illegali.</p>
+                </div>
             </div>
         </div>
 
+        <!-- FOGLIO 3: Spazio per la continuazione e Bibliografia finale -->
         <div class="paper" id="p3">
             <div class="page front">
-                <h1 class="subtitle magic-block">2.2 - Principali specie magiche e ruolo ecosistemico</h1>
+                <h2 class="section-title magic-block">3 – DIFFUSIONE DEL BRACCONAGGIO</h2>
                 <div class="columns">
-                    <p class="magic-block">Tra le specie più territoriali figurano ippogrifi e acromantule, entrambi molto inclini a comportamenti difensivi in caso di minaccia. Le acromantule sono da considerarsi predatori volti a mantenere l’equilibrio della foresta proibita. Da tener conto è la presenza di Kneazle selvatici non ancora addomesticati presso i margini del perimetro del castello in quanto riescono a distinguere bene individui ostili o inaffidabili e, di conseguenza, anche quelli a cui appoggiarsi (Thorne, W.).</p>
-                    <p class="magic-block">Accanto alle seguente si trovano quelle creature definite “ad alta sensibilità” quali unicorni, Bowtruckle e Jobberknoll. La presenza (o assenza) dei Jobberknoll rappresenta un indicatore di stato di salute dell’ambiente (Greengrass E.).</p>
-                    <p class="magic-block">Un ruolo fondamentale è svolto dai centauri stanziati nelle regioni più profonde della Foresta Proibita. Pur non classificabile come fauna selvatica, la presenza dei guardiani della foresta influisce sulla sensibilità del territorio circostante. Spesso sfruttati per le loro capacità astronomiche e divinatorie, i centauri rifiutano categoricamente di collaborare con il Ministero della Magia. Non si sentono inferiori, né superiori. Hanno valori diversi da quelli di una comunità magica sempre più frenetica, valori legati alla loro terra e ad una considerazione di sé tale da non volersi abbassare ad essere sottoposti di chi, per anni, ha fatto i suoi comodi nella loro zona ignorandone tradizioni e regole. A prescindere da ciò, percepiscono e difendono il loro territorio (e quindi ciò che è presente oltre il confine) da gruppi di maghi armati e cacciatori illegali (Thornewick A.).</p>
-                </div>   
-            </div>
-
-            <div class="page back">
-                <h1 class="subtitle magic-block">2.3 -  Interdipendenza, omeostasi e vulnerabilità dell’ecosistema</h1>
-                <div class="columns">
-                    <p class="magic-block">Uno degli elementi caratteristici è l’elevato grado di indipendenza. La scomparsa, la migrazione o l’alterazione nel suo ciclo-vita naturale di una delle specie può produrre effetti estesi sull’intero ambiente (Blatchley M.). Molte creature sviluppano forme di stress arcano cumulativo quando quest’equilibrio viene alterato nel medio-lungo periodo manifestando in seguitò aumento di condotte aggressive, alterando i comportamenti migratori e alternandoli ad una vena territoriale anonima e paradossale (Blatchley M.).</p>
-                    <p class="magic-block">La foresta proibita funziona come un sistema eco-magico autoregolante in cui flora e fauna, in quanto connesse, creano un sistema omeostatico tale da non aver bisogno dell’intervento esterno di creatura o mago alcuno (Wetbranch H.). Perturbazioni prolungate rischiano dunque di compromettere la stabilità complessiva dell’intero territorio oltre che la presenza della singola specie (Wetbranch H.).</p>
-                    <p class="magic-block">Come anticipato, parliamo di un territorio particolarmente vulnerabile alle attività umane. La presenza di creature e materiali di grande valore ha favorito un incremento di incursioni illegali nelle aree indicate come protetti dalla Legge Magica. (McFusty S.). Traffico di corna di Graphorn, piume di Jobberknoll e altri comportamenti magici contribuisce alla frammentazione territoriale degli habitat e alla sua progressiva destabilizzazione di numerose specie territoriali (McFusty S.). L’espansione dei mercati neri magici porta anche all’incremento di episodi violenti nelle aree boschive e queste minano chiaramente l’equilibrio biologico. Importante è focalizzarsi però non solo su quest’ultimo, ma sul rapporto tra creature magiche e comunità umana. Le creature apprendono a modo loro e cominciano ad essere più restie ad attività di allevamento o all’avvicinarsi in maniera spontanea anche ai maghi più innocui (Vane E.).</p>
+                    <p class="magic-block"><em>[Incolla qui il testo dei capitoli centrali: 3.1, 3.2, 4.1 e 5. Conclusione]</em></p>
+                    <p class="magic-block">L’espansione dei bracconieri documentata dalla letteratura Magizoologica concorda sul fatto che le attività di bracconaggio hanno subito una crescita. Parliamo di gruppi, riuniti e organizzati in maniera gerarchica volti a dividersi il profitto delle loro ingiuriose e illegali azioni.</p>
+                    <p class="magic-block">Oltre che ad incrementare l’efficienza della cattura sono invasive in quanto impattano direttamente sull’ecosistema. Manipolare o distruggere spazi riproduttivi provoca una migrazione forzata (McFusty S.).</p>
                 </div>
-            </div>
-        </div>
-
-        <div class="paper" id="p4">
-            <div class="page front">
-                <h2 class="article-title magic-block" style="font-size: 26px;">3 - Diffusione del bracconaggio e alterazioni comportamentali nella fauna magica</h2>
-                <h1 class="subtitle magic-block">3.1 - Espansione delle attività di bracconaggio nelle Highlands</h1>
-                <div class="columns">
-                    <p class="magic-block">L’espansione dei bracconieri documentata dalla letteratura Magizoologica e dalle relazoini interne del Dipartimento per la Regolazione e il Controllo delle Creature Magiche concordano sul fatto che le attività di bracconaggio hanno subito una crescita di tipo quantitativo e organizzativo. Parliamo, difatti di episodi non più isolati. Parliamo di gruppi, riuniti e organizzati in maniera gerarchica volti a dividersi il profitto delle loro ingiuriose e illegali azioni. Questi operano in modo coordinato lungo rotte forestali e montane, quindi il territorio eterogeneo delle Highlands presso cui si trova il castello di Hogwarts è per loro fonte di opportunità (Vane E.).</p>
-                    <p class="magic-block">Sul piano operativo vi è un’evoluzione significativa dal punto di vista qualitativo delle tecniche di cattura. Assieme ai metodi tradizionali quali le classiche reti incantate ed esche attivate a base di pressioni piuttosto che l’utilizzo di componenti alchemici o ingredienti che fanno da esca alla fauna magica, se ne aggiungono altre più sofisticate e invasive (McFusty S.). Tra queste troviamo:
-                        <ul>
-                            <li>Trappole a confinamento magico che alterano lo spazio ed impediscono la fuga della creatura;</li>
-                            <li>Incantesimi di disorientamento sensoriale per indebolire la percezione territoriale delle specie più aggressive;</li>
-                            <li>Marcature dell’habitat che simulano la presenza di altri predatori per spingere alcuni individui in aree predisposte alla cattura;</li>
-                            <li>Interruzione di siti di nidificazione per sottrarre esemplari giovani che non hanno ancora effettuato la maturazione magica (McFusty S.).</li>
-                        </ul>
-                    </p>
-                    <p class="magic-block">Oltre che ad incrementare l’efficienza della cattura sono invasive in quanto impattano direttamente sull’ecosistema. Manipolare o distruggere spazi riproduttivi provoca una migrazione forzata e la frammentazione di gruppi di creature che abbandonano progressivamente l’area boschive (McFusty S.). Si lascia dunque un’impronta magica residuale per un periodo di tempo che le creature percepiscono ed evitano per salvaguardarsi (McFusty S.).</p>
-                    <p class="magic-block">Nel complesso, possiamo asserire che non bisogna più vedere l’espansione del bracconaggio come una minaccia esterna all’ecosistema: bisogna vederla come un fattore di alterazione ambientale con azioni di tipo continuo e cumulativo sulla stabilità della fauna magica (Vane E.).</p>
-                </div>
-            </div>
-
-                <div class="page back">
-                    <h1 class="subtitle magic-block">3.2 -  Stress arcano e modificazioni comportamentali della fauna magica</h1>
-                    <div class="columns">
-                        <p class="magic-block">Per stress arcano si indica quella forma di squilibrio fisiologico e magico-ambientale osservabile nelle creature soggette a perturbazioni prolungate del proprio habitat. Si differenzia dallo stress biologico normale in quanto colpisce la componente magica della creatura e la sua stabilità (Blatchley M.). Si tratta di una condizione di tipo cumulativo in cui ripetute esposizioni a determinati eventi definibili traumatici generano una progressiva alterazione dell’equilibrio arcano individuale. Disequilibrio dapprima leggero e poi sempre più debilitante (Blatchley M.). La differenza con lo stress acuto è che corrisponde ad una reazione immediata ad una minaccia percepita, mentre lo stress arcano è una condizione più simile all’ansia in quanto si sviluppa nel tempo e in assenza di pericoli veri e propri creando una condizione di cronicità (Blatchley M.).</p>
-                        <p class="magic-block">Questo tipo di stress ha diversi esiti su diverse specie. Gli ippogrifi, ad esempio, presentano una riduzione della loro tolleranza territoriale divenendo via via più aggressivi (Pokeby G.) mentre gli Kneazle registrano stati di vigilanza ben più alti rispetto alla media finendo inevitabilmente con l’isolarsi (Thorne W.).</p>
-                        <p class="magic-block">Viene alterata, inoltre, nella maggior parte delle creature la capacità di leggere le situazioni correttamente andando a fraintendere le intenzioni magiche dell’uomo rendendo sempre più sottile la linea tra presenze neutre e ostili. Ciò spiega il perché è in aumento la frequenza di incidenti tra maghi non coinvolti in attività di bracconaggio e creature magiche (Blatchley M.).</p>
-                        <p class="magic-block">Forme più avanzate di stress arcano possono influenzare la struttura sociale di specie più intelligenti, come i centauri, rafforzando la diffidenza verso l’esterno. Rappresenta quindi non solo una risposta individuale ma un fattore di riorganizzazione collettiva (Thornewick A.).</p>
-                        <p class="magic-block">Rottura dell’omeostasi eco-magica: effetti sull’ecosistema e sulla comunità magica</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="paper" id="p5">
-                <div class="page front">
-                    <h2 class="article-title magic-block" style="font-size: 26px;">4 - Rottura dell’omeostasi eco-magica: effetti sull’ecosistema e sulla comunità magica</h2>
-                    <h1 class="subtitle magic-block">4.1 -  Effetti sull’ecosistema magico: destabilizzazione sistemica e perdita dell’equilibrio</h1>
-                    <div class="column">
-                        <p class="magic-block">L’intensificazione delle attività di bracconaggio e ciò che ne consegue sembra aver prodotto quindi nelle aree limitrofe ad Hogwarts una forma di instabilità eco-magica non riconducibile alle semplici oscillazioni naturali presente in ogni ecosistema. La foresta proibita, inoltre, in quanto autoregolante porta ad avere una difficoltà sensibilmente maggiore a ristabilire il proprio equilibrio (Wetbranch H.).</p>
-                        <p class="magic-block">Si può parlare di un vero e proprio effetto a cascata. Tra i primi segnali c’è il collasso delle interdipendenze ecologiche. Le relazioni tra le specie di ogni tipo risultano alterate e ciò influisce sull’ambiente circostante creando una migrazione forzata di specie ad alta sensibilità magica come Unicorni e Jobberknoll (Greengtass E.). Ne consegue un’osservazione in maniera parallela di ridistribuzione anomala di quelle specie considerate territoriali. Specie predatrici, invece tendono a concentrarsi in aree ristrette aumentando la sovrapposizione competitiva tra membri di diverse specie o, nei casi peggiori, della stessa. Ciò è correlato ad una perdita progressiva di segnali magici ambientali circa la percezione territoriale (Blatchley E.).</p>
-                        <p class="magic-block">Emergono, inoltre, zone ecologicamente stabili dove la struttura magica è parzialmente compromessa: crescita irregolare della vegetazione e comportamento diverso dai regolari pattern delle creature. La comparsa di queste zone indica l’incapacità dell’ecosistema di rispondere alle interferenze esterne ormai sempre più pressanti (McFusty S.).</p>
-                        <p class="magic-block">Si asserisce un equilibrio ormai compromesso: da dinamico si è passato ad instabile.</p>
-                    </div>
-                </div>
-
-                <div class="page back">
-                    <h1 class="subtitle magic-block">4.2 – Implicazioni per la comunità magica: conflitto, gestione e crisi istituzionale</h1>
-                    <div class="column">
-                        <p class="magic-block">La destabilizzazione dell’ecosistema ha inevitabilmente prodotto conseguenze di tipo diretto o indiretto sulla comunità magica.</p>
-                        <p class="magic-block">In primis si denota una difficoltà da parte delle creature a fidarsi e convivere con gli umani a causa dello stress arcano. Gli incidenti sono i primi effetti diretti di questa destabilizzazione (Blatchley E.). Tali dinamiche hanno evidenziato limiti strutturali nelle capacità del Dipartimento per la Regolazione e il controllo delle creature Magiche circa il controllo del bracconaggio nelle regioni più recondite della Foresta Proibita difficilmente raggiungibili dalle unità d’intervento ordinario (Vane E.).</p>
-                        <p class="magic-block">Si osserva in maniera congiunta un deterioramento del rapporto tra comunità magica e popolazioni non umane intelligenti. I centauri mostrano difatti una crescente tendenza all’isolamento e alla riduzione dei contatti diplomatici con i maghi. Questa è interpretabile come una risposta non solo alla perdita dei territori, ma alla continua invasione di quelli ancora in loro possesso e soprattutto alla mancanza di rispetto per quelli considerati sacri (Thornewick A.).</p>
-                        <p class="magic-block">Il contesto educativo e formativo risente di tali trasformazioni in quanto l’accesso alla Foresta Proibita è sempre meno concesso agli studenti. Il rischio maggiore è quello di percepire l’ambiente non come oggetto di studio, ma come area instabile e da evitare (McFusty S.).</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="paper" id="p5">
-                <h2 class="article-title magic-block" style="font-size: 26px;">5 - Conclusione</h2>
-                <div class="column">
-                    <p class="magic-block">L’insieme delle evidenze porta a considerare le trasformazioni in atto nelle aree limitrofe della nostra scuola va considerato come qualcosa che va oltre una variazione naturale. Sebbene la letteratura disponibile ci dia degli strumenti utili per interpretare il fenomeno, ciò che spaventa e dovrebbe far riflettere è come venga meno la capacità di equilibrio del sistema. Il bracconaggio non è quindi una causa. È un fattore che si inserisce in un contesto già fragile e alterato andandone ad amplificare le tensioni.</p>
-                    <p class="magic-block">Un’attenta analisi richiede anche la natura progressiva e silente del fenomeno stesso. Non è qualcosa che fa rumore come un incantesimo lanciato nel cuore della notte. È un qualcosa di più subdolo che noi riusciamo a percepire e a vedere in ritardo a causa dell’eco di queste azioni. La rottura dell’omeostasi non è più solo teoria, ma è un qualcosa che diventa via via più evidente sul campo.</p>
-                    <p class="magic-block">Per quanto concerne la comunità magica, la sensazione è quella di una crescente difficoltà nel mantenere una relazione equilibrata con ciò che viene studiato, protetto, vissuto. Le istituzioni che intervengono in modo reattivo dovrebbero quindi provvedere ad un intervento in maniera preventiva.</p>
-                    <p class="magic-block">Personalmente ritengo difficile ignorare la questione che non siamo difronte solo ad un problema ambientale, ma ad un intreccio di fattori che mette in discussione il modo in cui può essere gestito il mondo magico. Prima di cercare soluzioni certamente utili, risulterebbe opportuno capire a pieno il problema. Sviscerarlo. Analizzarlo al fine da rendere quel problema un nostro problema. Solo quando torneremo in sintonia con questo ecosistema, vivendolo e ascoltandone il flusso senza dominarlo, riusciremo a trovare la soluzione corretta.</p>
-                </div>
-            </div>
-
-            <div class="page back">
-                <h2 class="article-title magic-block" style="font-size: 26px;">6 - Bibliografia</h2>
-                    <ul style="font-size: 18px; line-height: 2.2;">
-                        <li class="magic-block">Blatchley, Miriam - <em>Codice delle Leggi Magiche Vol. II</em>Bestie Ferite: Stress Arcano e Aggressività nella Fauna Magica.</li>
-                        <li class="magic-block">Arsenius Jigger, <em>Pozioni e Antidoti Legislativi</em>, Diagon Alley.</li>
-                        <li class="magic-block">Greengrass, Elspeth - <em>Il canto Spezzato del Jobberknoll.</em></li>
-                        <li class="magic-block">McFusty, Silvanus - <em>Ombre sulla Riserva: Cronache di una lotta silenziosa.</em></li>
-                        <li class="magic-block">Pokeby, Gulliver - <em>L’istinto del Branco: Comportamenti Sociali degli Ippogrifi.</em></li>
-                        <li class="magic-block">Ridgebit, Harvey - <em>Creature nate dal fuoco: Una guida al monitoraggio delle Salamandre.</em></li>
-                        <li class="magic-block">Thorne, Walter - <em>Felini sensibili: la compagnia magica dei Kneazle.</em></li>
-                        <li class="magic-block">Vane, Edrick - <em>Sangue d’Argento: Mercati Neri e traffico di Componenti Magiche nel Nord Europa.</em></li>
-                        <li class="magic-block">Wetbranch, Honoria - <em>Le vene vive della Foresta Proibita.</em></li>
-                </ul>
             </div>
             
+            <div class="page back">
+                <h2 class="section-title magic-block">6 – BIBLIOGRAFIA</h2>
+                <ul style="font-size: 15px; line-height: 1.8; padding-left: 20px;">
+                    <li class="magic-block">Blatchley, Miriam – <em>Bestie Ferite: Stress Arcano e Aggressività nella Fauna Magica.</em></li>
+                    <li class="magic-block">Greengrass, Elspeth – <em>Il canto Spezzato del Jobberknoll.</em></li>
+                    <li class="magic-block">McFusty, Silvanus – <em>Ombre sulla Riserva: Cronache di una lotta silenziosa.</em></li>
+                    <li class="magic-block">Pokeby, Gulliver – <em>L’istinto del Branco: Comportamenti Sociali degli Ippogrifi.</em></li>
+                    <li class="magic-block">Ridgebit, Harvey – <em>Creature nate dal fuoco: Una guida al monitoraggio delle Salamandre.</em></li>
+                    <li class="magic-block">Thorne, Walter – <em>Felini sensibili: la compagnia magica dei Kneazle.</em></li>
+                    <li class="magic-block">Thornewick, Aelius – <em>Tra gli abeti di Fangorn Minore: Migrazioni e Territorialità dei Centauri Scozzesi.</em></li>
+                    <li class="magic-block">Vane, Edrick – <em>Sangue d’Argento: Mercati Neri e traffico di Componenti Magiche nel Nord Europa.</em></li>
+                    <li class="magic-block">Wetbranch, Honoria – <em>Le vene vive della Foresta Proibita.</em></li>
+                </ul>
+            </div>
         </div>
 
-        <!-- Pulsanti per Sfogliare -->
         <div class="controls">
             <button id="prevBtn">Pagina Precedente</button>
             <button id="nextBtn">Gira Pagina</button>
@@ -298,43 +163,35 @@
     </div>
 
     <script>
-        // --- LOGICA DEL LIBRO E DELL'INCHIOSTRO MAGICO ---
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
         const papers = document.querySelectorAll('.paper');
         
-        let currentLocation = 1; // La posizione attuale (1 = copertina chiusa)
+        let currentLocation = 1;
         let numOfPapers = papers.length;
         let maxLocation = numOfPapers + 1;
 
-        // Gestisce i livelli (z-index) affinché le pagine si sovrappongano correttamente
         function setZIndex() {
             papers.forEach((paper, index) => {
                 if (index + 1 < currentLocation) {
-                    // Pagine già girate (si trovano a sinistra, l'ultima girata deve stare sopra)
                     paper.style.zIndex = index + 1;
                 } else {
-                    // Pagine non ancora girate (si trovano a destra, la prima deve stare sopra)
                     paper.style.zIndex = numOfPapers - index;
                 }
             });
         }
 
-        // Funzione per animare l'inchiostro in modo graduale
         function triggerMagicInk(pageElement) {
             if(!pageElement) return;
             const blocks = pageElement.querySelectorAll('.magic-block');
             
-            // 1. "Cancella" l'inchiostro se c'era
             blocks.forEach(block => {
                 block.classList.remove('reveal');
-                void block.offsetWidth; // Trucco per forzare il riavvio dell'animazione
+                void block.offsetWidth; 
             });
             
-            // 2. Fai apparire i testi sfalsandoli nel tempo (effetto macchina da scrivere/inchiostro che scorre)
             blocks.forEach((block, index) => {
-                // Ogni blocco appare 0.25 secondi dopo il precedente
-                block.style.animationDelay = `${index * 0.25}s`; 
+                block.style.animationDelay = `${index * 0.2}s`; 
                 block.classList.add('reveal');
             });
         }
@@ -344,16 +201,13 @@
                 const currentPaper = papers[currentLocation - 1];
                 currentPaper.classList.add('flipped');
                 
-                // Animiamo l'inchiostro sulla pagina di SINISTRA (che si svela girando)
                 triggerMagicInk(currentPaper.querySelector('.back'));
                 
-                // Animiamo l'inchiostro sulla pagina di DESTRA (la nuova pagina sotto)
                 if (currentLocation < numOfPapers) {
                     triggerMagicInk(papers[currentLocation].querySelector('.front'));
                 }
                 
                 currentLocation++;
-                // Cambia lo z-index esattamente a metà dell'animazione (600ms su 1.2s totali)
                 setTimeout(setZIndex, 600); 
             }
         }
@@ -364,10 +218,8 @@
                 const currentPaper = papers[currentLocation - 1];
                 currentPaper.classList.remove('flipped');
                 
-                // Animiamo l'inchiostro sulla pagina di DESTRA (il fronte che si richiude)
                 triggerMagicInk(currentPaper.querySelector('.front'));
                 
-                // Animiamo l'inchiostro sulla pagina di SINISTRA (la pagina che c'era prima)
                 if (currentLocation > 1) {
                     triggerMagicInk(papers[currentLocation - 2].querySelector('.back'));
                 }
@@ -379,7 +231,6 @@
         nextBtn.addEventListener('click', goNext);
         prevBtn.addEventListener('click', goPrev);
 
-        // All'avvio, sistemiamo i livelli e inneschiamo la magia sulla prima pagina!
         setZIndex();
         triggerMagicInk(papers[0].querySelector('.front'));
     </script>
